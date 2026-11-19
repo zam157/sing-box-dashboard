@@ -36,6 +36,11 @@ export interface DesktopProfile {
   lastUpdated?: number;
 }
 
+export interface DesktopProfileNetworkModes {
+  tun: boolean;
+  systemProxy: boolean;
+}
+
 export interface DesktopProfilesState {
   selectedId: string | null;
   profiles: DesktopProfile[];
@@ -312,6 +317,8 @@ export interface DesktopHost {
     readContent(id: string): Promise<string>;
     writeContent(id: string, content: string): Promise<void>;
     updateRemote(id: string): Promise<void>;
+    getNetworkModes?(id: string): Promise<DesktopProfileNetworkModes>;
+    setNetworkMode?(id: string, mode: keyof DesktopProfileNetworkModes, enabled: boolean): Promise<DesktopProfileNetworkModes>;
     pickImportFile(): Promise<{ fileName: string; data: Uint8Array } | null>;
     exportFile(id: string): Promise<boolean>;
     importData(fileName: string, data: Uint8Array): Promise<void>;

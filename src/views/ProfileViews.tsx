@@ -3,7 +3,12 @@ import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { formatRelativeTime } from "../api/format";
 import { describeError } from "../api/stream";
 import { navigate, useNow } from "../app/context";
-import type { DesktopHost, DesktopProfile, DesktopProfileType } from "../app/desktop";
+import type {
+  DesktopHost,
+  DesktopProfile,
+  DesktopProfileNetworkModes,
+  DesktopProfileType,
+} from "../app/desktop";
 import { useDesktopProfiles } from "../app/desktop";
 import { showError } from "../app/errorStore";
 import { useI18n } from "../app/i18n";
@@ -129,6 +134,60 @@ function ShareMenuItems(props: {
   );
 }
 
+function ProfileNetworkControls(props: { host: DesktopHost; id: string }) {
+  const { host, id } = props;
+  const { t } = useI18n();
+  const [modes, setModes] = useState<DesktopProfileNetworkModes | null>(null);
+  const [busy, setBusy] = useState(false);
+  const { getNetworkModes, setNetworkMode } = host.profiles;
+
+  useEffect(() => {
+    if (getNetworkModes === undefined) {
+      return;
+    }
+    let currentRequest = 0;
+    const refresh = () => {
+      const request = ++currentRequest;
+      void getNetworkModes(id).then((value) => {
+        if (request === currentRequest) {
+          setModes(value);
+        }
+      }).catch((error) => {
+        if (request === currentRequest) {
+          setModes(null);
+          showError(error);
+        }
+      });
+    };
+    refresh();
+    const unsubscribe = host.profiles.onChanged(refresh);
+    return () => {
+      currentRequest++;
+      unsubscribe();
+    };
+  }, [getNetworkModes, host, id]);
+
+  function change(mode: keyof DesktopProfileNetworkModes, enabled: boolean) {
+    if (setNetworkMode === undefined) {
+      return;
+    }
+    setBusy(true);
+    void setNetworkMode(id, mode, enabled)
+      .then(setModes)
+      .catch(showError)
+      .finally(() => setBusy(false));
+  }
+
+  return (
+    <div className={styles.profileNetwork} aria-busy={busy}>
+      <Toggle label={t("TUN")} value={modes?.tun ?? false} disabled={modes === null || busy}
+        onChange={(enabled) => change("tun", enabled)} />
+      <Toggle label={t("System HTTP Proxy")} value={modes?.systemProxy ?? false}
+        disabled={modes === null || busy} onChange={(enabled) => change("systemProxy", enabled)} />
+    </div>
+  );
+}
+
 export function ProfileCard(props: { host: DesktopHost }) {
   const host = props.host;
   const { t } = useI18n();
@@ -199,6 +258,9 @@ export function ProfileCard(props: { host: DesktopHost }) {
               <div className={styles.profileMeta}>
                 <ProfileInfo profile={selected} />
               </div>
+              {host.platform === "win32" && host.profiles.getNetworkModes && host.profiles.setNetworkMode && (
+                <ProfileNetworkControls key={selected.id} host={host} id={selected.id} />
+              )}
               <div className={cx("row-actions", styles.profileActions)}>
                 <IconButton title={t("Edit")} onClick={() => setEditing(true)}>
                   <Icon name="edit" size={16} />

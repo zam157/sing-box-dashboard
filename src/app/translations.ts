@@ -418,6 +418,7 @@ export const TRANSLATIONS = {
     "ru": "Есть несохранённые изменения. Отменить их?",
   },
   "Discard": { "zh-Hans": "放弃", "zh-Hant": "放棄", "fa": "چشم‌پوشی", "ru": "Отказаться" },
+  "TUN": { "zh-Hans": "TUN", "zh-Hant": "TUN", "fa": "TUN", "ru": "TUN" },
   "System HTTP Proxy": { "zh-Hans": "系统 HTTP 代理", "zh-Hant": "系統 HTTP 代理", "fa": "پروکسی HTTP سیستم", "ru": "Системный HTTP-прокси" },
   "Enabled": { "zh-Hans": "已启用", "zh-Hant": "已啟用", "fa": "فعال", "ru": "Включено" },
   "Cache Size": { "zh-Hans": "缓存大小", "zh-Hant": "快取大小", "fa": "اندازه حافظه پنهان", "ru": "Размер кэша" },

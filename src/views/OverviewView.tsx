@@ -88,6 +88,7 @@ export function OverviewView() {
         <CardManagementDialog
           config={cardsConfig}
           desktop={host !== null}
+          profileNetworkControls={host?.profiles.getNetworkModes !== undefined}
           onChange={(next) => {
             saveDashboardCardsConfig(next);
             setCardsConfig(() => next);
@@ -113,6 +114,7 @@ function OverviewCards(props: { config: DashboardCardsConfig; host: DesktopHost 
   const isCardVisible = (card: string) => {
     switch (card) {
       case "systemProxy":
+        return props.host !== null && props.host.profiles.getNetworkModes === undefined;
       case "profile":
         return props.host !== null;
       case "clashMode":
@@ -213,6 +215,7 @@ function OverviewCards(props: { config: DashboardCardsConfig; host: DesktopHost 
 function CardManagementDialog(props: {
   config: DashboardCardsConfig;
   desktop: boolean;
+  profileNetworkControls: boolean;
   onChange: (config: DashboardCardsConfig) => void;
   onClose: () => void;
 }) {
@@ -220,6 +223,7 @@ function CardManagementDialog(props: {
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const enabledCards = new Set(props.config.enabled);
+  const order = props.config.order.filter((card) => !props.profileNetworkControls || card !== "systemProxy");
 
   const moveDrag = (event: React.PointerEvent<HTMLElement>) => {
     if (dragIndex === null || !listRef.current) {
@@ -231,7 +235,9 @@ function CardManagementDialog(props: {
       return event.clientY >= rect.top && event.clientY < rect.bottom;
     });
     if (target >= 0 && target !== dragIndex) {
-      props.onChange(moveCard(props.config, dragIndex, target));
+      const from = props.config.order.indexOf(order[dragIndex]);
+      const to = props.config.order.indexOf(order[target]);
+      props.onChange(moveCard(props.config, from, to));
       setDragIndex(target);
     }
   };
@@ -240,7 +246,7 @@ function CardManagementDialog(props: {
     <Dialog onClose={props.onClose}>
       <h3>{t("Dashboard Items")}</h3>
       <div className={styles.cardManageList} ref={listRef}>
-        {props.config.order.map((card, index) => {
+        {order.map((card, index) => {
           if (!isDashboardCardId(card)) {
             return null;
           }

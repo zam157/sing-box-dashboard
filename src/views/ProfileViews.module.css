@@ -45,6 +45,12 @@
   align-items: center;
 }
 
+.profile-network {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: var(--space-8);
+}
+
 .profile-actions {
   margin-top: var(--space-10);
 }
