@@ -34,6 +34,7 @@ const CLOSED_CONNECTIONS_MAX = 1000;
 
 export interface ServiceStatusData {
   status: ServiceStatus | null;
+  lastStableStatus: ServiceStatus_Type | null;
 }
 
 export interface StatusData {
@@ -152,10 +153,15 @@ export class DaemonApi {
         }),
     );
     this.serviceStatus = new StreamStore<ServiceStatusData>(
-      () => ({ status: null }),
+      () => ({ status: null, lastStableStatus: null }),
       async ({ signal, update }) => {
         for await (const message of this.client.subscribeServiceStatus({}, { signal })) {
-          update((data) => ({ ...data, status: message }));
+          const status = message.status;
+          const transitioning = status === ServiceStatus_Type.STARTING || status === ServiceStatus_Type.STOPPING;
+          update((data) => ({
+            status: message,
+            lastStableStatus: transitioning ? data.lastStableStatus : status,
+          }));
         }
       },
     );

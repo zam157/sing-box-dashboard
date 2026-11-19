@@ -149,6 +149,14 @@
   border-top: 1px solid var(--border);
 }
 
+.network-modes {
+  padding-inline: var(--space-10);
+}
+
+.network-modes :global(.toggle-line) {
+  font-size: inherit;
+}
+
 .submenu > .section:first-child,
 .submenu > .submenu-list:first-child {
   padding-top: 0;

@@ -17,6 +17,7 @@ import type { DesktopHost } from "./app/desktop";
 import { dismissError, showError, useCurrentError } from "./app/errorStore";
 import { I18nProvider, useI18n } from "./app/i18n";
 import { Icon } from "./components/Icon";
+import { ProfileNetworkControls } from "./components/ProfileNetworkControls";
 import { Spinner, Switch } from "./components/ui";
 import { ServiceStatus_Type } from "./gen/daemon/started_service_pb";
 import type { Group } from "./gen/daemon/started_service_pb";
@@ -291,6 +292,18 @@ function TrayMenuContent(props: { host: DesktopHost }) {
               controller={controller}
             />
           </div>
+          {host.platform === "win32" && selectedId !== null &&
+            host.profiles.getNetworkModes && host.profiles.setNetworkMode && (
+              <div className={styles.section} onMouseEnter={controller.close}>
+                <ProfileNetworkControls
+                  key={selectedId}
+                  host={host}
+                  id={selectedId}
+                  className={styles.networkModes}
+                  disabled={busy || transitioning}
+                />
+              </div>
+            )}
           <div className={styles.section}>
             <button
               type="button"

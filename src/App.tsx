@@ -758,7 +758,14 @@ function ShellContent(props: ShellProps & { onRetry: () => void }) {
   }, [route]);
 
   const started = serviceStatusType === ServiceStatus_Type.STARTED;
+  const showRunningViews =
+    started || (localHost !== null && serviceStatus.data.lastStableStatus === ServiceStatus_Type.STARTED);
   const hasGroups = started && groups.data.loaded && groups.data.groups.length > 0;
+  const [hadGroups, setHadGroups] = useState(false);
+  if (started && hadGroups !== hasGroups) {
+    setHadGroups(hasGroups);
+  }
+  const showGroups = showRunningViews && (started ? hasGroups : hadGroups);
   const known = serviceStatus.phase !== "connecting" || serviceStatus.data.status !== null;
 
   const groupsKnown = groups.data.loaded || groups.phase === "error";
@@ -866,7 +873,7 @@ function ShellContent(props: ShellProps & { onRetry: () => void }) {
 
   const mainContent = (
     <main className={styles.content}>
-      {route.page === "overview" && <OverviewView />}
+      {route.page === "overview" && <OverviewView showRunningCards={showRunningViews} />}
       {route.page === "groups" && <GroupsView />}
       {route.page === "connections" && <ConnectionsView />}
       {route.page === "logs" && <LogsView />}
@@ -960,10 +967,10 @@ function ShellContent(props: ShellProps & { onRetry: () => void }) {
               sing-box
               {serverInfo && <span className={styles.sidebarBrandVersion}>{serverInfo.version}</span>}
             </div>
-            {started ? (
+            {showRunningViews ? (
               <>
                 {navItem("overview", t("Overview"), "dashboard", route.page === "overview")}
-                {hasGroups && navItem("groups", t("Groups"), "folder", route.page === "groups")}
+                {showGroups && navItem("groups", t("Groups"), "folder", route.page === "groups")}
                 {navItem("connections", t("Connections"), "swap_vert", route.page === "connections")}
               </>
             ) : (

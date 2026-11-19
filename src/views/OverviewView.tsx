@@ -29,7 +29,7 @@ import { ProfileCard, SystemProxyCard } from "./ProfileViews";
 import styles from "./OverviewView.module.css";
 import { cx } from "../lib/cx";
 
-export function OverviewView() {
+export function OverviewView(props: { showRunningCards: boolean }) {
   const api = useApi();
   const { t } = useI18n();
   const host = useLocalDesktopHost();
@@ -64,7 +64,7 @@ export function OverviewView() {
       <PageHeader
         title={t("Overview")}
         actions={
-          started ? (
+          props.showRunningCards ? (
             <IconButton
               title={t("Dashboard Items")}
               onClick={() => setManaging(true)}
@@ -75,7 +75,7 @@ export function OverviewView() {
         }
       />
       <StreamBanner snapshot={serviceStatus} />
-      {started ? (
+      {props.showRunningCards ? (
         <OverviewCards config={cardsConfig} host={host} />
       ) : host !== null ? (
         <div className={styles.cardGrid}>
